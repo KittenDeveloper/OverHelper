@@ -1,0 +1,18 @@
+[package]
+name = "overhelper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.23"
+directories = "4.0.1"
+iced = "0.7.0"
+iced_native = "0.8.0"
+lazy_static = "1.4.0"
+serde_json = "1.0.91"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
