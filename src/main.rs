@@ -20,11 +20,6 @@ pub enum Message
 {
 	UpdateBattlePassLevel(u8),
 
-	UpdateTankWins(i8),
-	UpdateDamageWins(i8),
-	UpdateSupportWins(i8),
-	ResetWins,
-
 	EventOccurred(iced_native::event::Event),
 
 	OpenSettings,
@@ -79,24 +74,6 @@ impl Application for OverHelperApp
 			Message::UpdateBattlePassLevel(new_level) =>
 			{
 				self.battle_pass_level = new_level;
-			},
-			Message::UpdateTankWins(delta) =>
-			{
-				self.tank_wins = (self.tank_wins as i8 + delta) as u8;
-			},
-			Message::UpdateDamageWins(delta) =>
-			{
-				self.damage_wins = (self.damage_wins as i8 + delta) as u8;
-			},
-			Message::UpdateSupportWins(delta) =>
-			{
-				self.support_wins = (self.support_wins as i8 + delta) as u8;
-			},
-			Message::ResetWins =>
-			{
-				self.tank_wins = 0;
-				self.damage_wins = 0;
-				self.support_wins = 0;
 			},
 			Message::EventOccurred(event) =>
 			{
@@ -224,32 +201,6 @@ impl Application for OverHelperApp
 			.center_y()
 			;
 
-		let roll_mastery_display = iced::widget::Text::new("Roll Mastery Tracker")
-			.horizontal_alignment(iced::alignment::Horizontal::Center)
-			.vertical_alignment(iced::alignment::Vertical::Center)
-			.size(48)
-			.width(iced::Length::Fill)
-			.height(iced::Length::FillPortion(1))
-			;
-		let tank_win_section = roll_win_counter(Roll::Tank, self.tank_wins);
-		let damage_win_section = roll_win_counter(Roll::Damage, self.damage_wins);
-		let support_win_section = roll_win_counter(Roll::Support, self.support_wins);
-
-		let reset_win_section = iced::widget::Text::new("Reset wins")
-			.horizontal_alignment(iced::alignment::Horizontal::Center)
-			.size(32)
-			;
-		let reset_win_section = iced::widget::Button::new(reset_win_section)
-			.on_press(Message::ResetWins)
-			.style(iced::theme::Button::Destructive)
-			.width(iced::Length::FillPortion(3))
-			;
-		let reset_win_section = iced::widget::Row::new()
-			.push(iced::widget::Space::with_width(iced::Length::FillPortion(2)))
-			.push(reset_win_section)
-			.push(iced::widget::Space::with_width(iced::Length::FillPortion(2)))
-			;
-
 		let settings_button = iced::widget::Button::new(iced::widget::Text::new("Settings"))
 			.on_press(Message::OpenSettings)
 			.width(iced::Length::FillPortion(1))
@@ -266,12 +217,6 @@ impl Application for OverHelperApp
 			.push(battle_pass_display_and_slider)
 			.push(battle_pass_target_information)
 			.push(iced::widget::Space::with_height(iced::Length::FillPortion(1)))
-			.push(roll_mastery_display)
-			.push(tank_win_section)
-			.push(damage_win_section)
-			.push(support_win_section)
-			.push(reset_win_section)
-			.push(iced::widget::Space::with_height(iced::Length::FillPortion(1)))
 			.push(settings_button)
 			.push(iced::widget::Space::with_height(iced::Length::FillPortion(1)))
 			.into()
@@ -283,93 +228,3 @@ impl Application for OverHelperApp
 	}
 }
 
-#[derive(Debug, Clone)]
-pub enum Roll
-{
-	Tank,
-	Damage,
-	Support,
-}
-
-fn roll_win_counter<'a>(roll: Roll, wins: u8) -> iced::Element<'a, Message>
-{
-	let size = 48;
-	let roll_text = match roll
-	{
-		Roll::Tank => "Tank",
-		Roll::Damage => "Damage",
-		Roll::Support => "Support",
-	};
-	let roll_text = iced::widget::Text::new(roll_text)
-		.width(iced::Length::Fill)
-		.horizontal_alignment(iced::alignment::Horizontal::Center)
-		.size(size);
-	let roll_text = iced::widget::Container::new(roll_text)
-		.center_x()
-		.center_y()
-		.width(iced::Length::FillPortion(3))
-		;
-	let plus =
-	{
-		let plus = iced::widget::Button::new(iced::widget::Text::new("+")
-			.size(size))
-			.width(iced::Length::Fill)
-			;
-		let plus = match roll
-		{
-			Roll::Tank if wins < 3 => plus.on_press(Message::UpdateTankWins(1)),
-			Roll::Damage if wins < 3 => plus.on_press(Message::UpdateDamageWins(1)),
-			Roll::Support if wins < 3 => plus.on_press(Message::UpdateSupportWins(1)),
-			_ => plus.style(iced::theme::Button::Secondary), // Don't allow more than 3 wins and make it look disabled
-		};
-		plus
-	};
-	let plus = iced::widget::Container::new(plus)
-		.center_x()
-		.center_y()
-		.padding(8)
-		.width(iced::Length::FillPortion(1))
-		;
-	let minus =
-	{
-		let minus = iced::widget::Button::new(iced::widget::Text::new("-")
-			.size(size))
-			.width(iced::Length::Fill)
-			;
-		let minus = match roll
-		{
-			Roll::Tank if wins > 0 => minus.on_press(Message::UpdateTankWins(-1)),
-			Roll::Damage if wins > 0 => minus.on_press(Message::UpdateDamageWins(-1)),
-			Roll::Support if wins > 0 => minus.on_press(Message::UpdateSupportWins(-1)),
-			_ => minus.style(iced::theme::Button::Secondary), // Don't allow more than 3 wins and make it look disabled
-		};
-		minus
-	};
-	let minus = iced::widget::Container::new(minus)
-		.center_x()
-		.center_y()
-		.padding(8)
-		.width(iced::Length::FillPortion(1))
-		;
-	let padding = iced::widget::Space::new(iced::Length::FillPortion(1), iced::Length::Units(1));
-	let wins_text = ["|||", "| |", " | ", ""][3 - wins as usize];
-	let wins_text = iced::widget::Text::new(wins_text)
-		.size(size)
-		.width(iced::Length::Fill)
-		;
-	let wins_text = iced::widget::Container::new(wins_text)
-		.center_x()
-		.center_y()
-		.width(iced::Length::FillPortion(2))
-		// .padding(32)
-		;
-
-
-	iced::widget::Row::new()
-		.push(roll_text)
-		.push(plus)
-		.push(minus)
-		.push(padding)
-		.push(wins_text)
-		.into()
-}
