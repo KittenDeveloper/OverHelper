@@ -19,6 +19,7 @@ fn main()
 pub enum Message
 {
 	UpdateBattlePassLevel(u8),
+	UpdateBattlePassTextInput(String),
 
 	EventOccurred(iced_native::event::Event),
 
@@ -71,6 +72,13 @@ impl Application for OverHelperApp
 	{
 		match message
 		{
+			Message::UpdateBattlePassTextInput(new_level) =>
+			{
+				if let Ok(new_level) = new_level.parse::<u8>()
+				{
+					self.battle_pass_level = std::cmp::min(new_level, self.battle_pass_target);
+				}
+			},
 			Message::UpdateBattlePassLevel(new_level) =>
 			{
 				self.battle_pass_level = new_level;
@@ -154,11 +162,43 @@ impl Application for OverHelperApp
 			.center_y()
 			;
 
-		let battle_pass_level_display = format!("Battle pass level {}", self.battle_pass_level);
+		let battle_pass_level_display = "Battle pass level";
 		let battle_pass_level_display = iced::widget::Text::new(battle_pass_level_display)
 			.horizontal_alignment(iced::alignment::Horizontal::Center)
 			.vertical_alignment(iced::alignment::Vertical::Center)
 			.size(32)
+			.width(iced::Length::FillPortion(17)) // 17 is the number of characters in the string
+			;
+		let battle_pass_text_input =
+			iced::widget::TextInput::new(self.battle_pass_level.to_string().as_str(), self.battle_pass_level.to_string().as_str(), Message::UpdateBattlePassTextInput)
+			;
+		let battle_pass_text_input = iced::widget::Container::new(battle_pass_text_input)
+			.width(iced::Length::FillPortion(3)) // 3 is the number of characters in the max level
+			.center_x()
+			.center_y()
+			;
+		let battle_pass_increment_button = iced::widget::Button::new(iced::widget::Text::new("+"))
+			.on_press(Message::UpdateBattlePassLevel(self.battle_pass_level + 1))
+			.width(iced::Length::FillPortion(1))
+			;
+		let battle_pass_decrement_button = iced::widget::Button::new(iced::widget::Text::new("-"))
+			.on_press(Message::UpdateBattlePassLevel(self.battle_pass_level - 1))
+			.width(iced::Length::FillPortion(1))
+			;
+		let battle_pass_buttons = iced::widget::Row::new()
+			.push(battle_pass_decrement_button)
+			.push(battle_pass_increment_button)
+			.width(iced::Length::FillPortion(2)) // Size for the inner text and padding
+			;
+		let battle_pass_buttons = iced::widget::Container::new(battle_pass_buttons)
+			.width(iced::Length::FillPortion(3))
+			.center_x()
+			.center_y()
+			;
+		let battle_pass_level_display = iced::widget::Row::new()
+			.push(battle_pass_level_display)
+			.push(battle_pass_buttons)
+			.push(battle_pass_text_input)
 			;
 		let battle_pass_level_display = iced::widget::Container::new(battle_pass_level_display)
 			.width(iced::Length::FillPortion(2))
