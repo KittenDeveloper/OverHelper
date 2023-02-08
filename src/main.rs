@@ -197,8 +197,9 @@ impl Application for OverHelperApp
 			;
 		let battle_pass_level_display = iced::widget::Row::new()
 			.push(battle_pass_level_display)
-			.push(battle_pass_buttons)
 			.push(battle_pass_text_input)
+			.push(iced::widget::Space::with_width(iced::Length::FillPortion(1)))
+			.push(battle_pass_buttons)
 			;
 		let battle_pass_level_display = iced::widget::Container::new(battle_pass_level_display)
 			.width(iced::Length::FillPortion(2))
