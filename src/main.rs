@@ -268,4 +268,3 @@ impl Application for OverHelperApp
 		self.theme.clone()
 	}
 }
-
